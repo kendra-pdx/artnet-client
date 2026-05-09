@@ -1,0 +1,26 @@
+[
+  {
+    "label": "Build & Debug - generator",
+    "build": {
+      "command": "cargo",
+      "args": ["build", "--examples"],
+    },
+    "program": "$ZED_WORKTREE_ROOT/target/debug/examples/generator",
+    // sourceLanguages is required for CodeLLDB (not GDB) when using Rust
+    "sourceLanguages": ["rust"],
+    "request": "launch",
+    "adapter": "CodeLLDB",
+  },
+  {
+    "label": "Build & Debug - display",
+    "build": {
+      "command": "cargo",
+      "args": ["build", "--examples"],
+    },
+    "program": "$ZED_WORKTREE_ROOT/target/debug/examples/display",
+    // sourceLanguages is required for CodeLLDB (not GDB) when using Rust
+    "sourceLanguages": ["rust"],
+    "request": "launch",
+    "adapter": "CodeLLDB",
+  },
+]
