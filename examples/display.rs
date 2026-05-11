@@ -3,7 +3,7 @@ mod shared;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use anyhow::anyhow;
-use artnet_client::{ARTNET_PORT, Address, ArtnetEvent, ArtnetReceiver};
+use artnet_client::{ARTNET_PORT, ArtnetEvent, ArtnetReceiver, NetAddress, Universe};
 use async_channel::Receiver;
 use edge_net::nal::UdpBind;
 use embassy_futures::select::select;
@@ -26,7 +26,7 @@ async fn app() -> anyhow::Result<()> {
     let local = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), ARTNET_PORT);
     let socket = stack.bind(local).await?;
 
-    let receiver = ArtnetReceiver::new(socket, tx, Address::from(0x0001).as_range(1));
+    let receiver = ArtnetReceiver::new(socket, tx, NetAddress::new(0, 0));
 
     let producer_task = receiver.run();
     let display_task = display(rx);
@@ -60,7 +60,7 @@ fn App<'a>(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'a>> {
             while let Some(e) = rx.next().await {
                 match e {
                     ArtnetEvent::Data { address, data } => {
-                        if address == Address::from(0x0001) {
+                        if address.universe == Universe::from(0x01) {
                             let new_image: Vec<[u8; 3]> =
                                 data.chunks(3).map(|c| [c[0], c[1], c[2]]).collect();
                             image.set(new_image);

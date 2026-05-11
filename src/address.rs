@@ -1,92 +1,71 @@
-use artnet_protocol::PortAddress;
 use derive_more::{Deref, From, Into};
+use derive_new::new;
+use tiny_artnet::PortAddress;
+
+#[derive(new, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct NetAddress {
+    pub net: u8,
+    pub sub_net: u8,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Deref, From, Into)]
-pub struct Address(u16);
+pub struct Universe(u8);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
-pub struct AddressRange {
-    pub base: Address,
-    pub length: u16,
+#[derive(new, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From, Into)]
+pub struct Address {
+    pub net: NetAddress,
+    pub universe: Universe,
 }
 
-impl Address {
-    pub fn as_range(self, length: u16) -> AddressRange {
-        assert!(length > 0, "length must be positive");
-        AddressRange { base: self, length }
+impl PartialEq<NetAddress> for Address {
+    fn eq(&self, other: &NetAddress) -> bool {
+        &self.net == other
     }
 }
 
-pub struct AddressRangeIterator {
-    range: AddressRange,
-    current: u16,
-}
+impl From<u16> for Address {
+    fn from(value: u16) -> Self {
+        //     | 15 | 8-14 | 4-7    | 0-3      |
+        //     | 0  | Net  | SubNet | Universe |
+        // (self.net as usize >> 14) + (self.sub_net as usize >> 7) + (self.universe as usize)
+        let net: u8 = (value >> 8 & 0x7F) as u8;
+        let sub_net = (value >> 4 & 0x0F) as u8;
+        let universe = (value & 0x0F) as u8;
 
-impl Iterator for AddressRangeIterator {
-    type Item = Address;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.current < self.range.length {
-            let next = Address::from(self.range.base.0 + self.current);
-            self.current += 1;
-            Some(next)
-        } else {
-            None
+        Address {
+            net: NetAddress { net, sub_net },
+            universe: Universe(universe),
         }
     }
 }
 
-impl IntoIterator for AddressRange {
-    type Item = Address;
-
-    type IntoIter = AddressRangeIterator;
-
-    fn into_iter(self) -> Self::IntoIter {
-        AddressRangeIterator {
-            range: self,
-            current: 0,
-        }
+impl From<tiny_artnet::PollReply<'_>> for NetAddress {
+    fn from(value: tiny_artnet::PollReply) -> Self {
+        let net = value.net_switch;
+        let sub_net = value.sub_switch;
+        NetAddress { net, sub_net }
     }
 }
 
-impl From<PortAddress> for Address {
-    fn from(value: PortAddress) -> Self {
-        Address(value.into())
+impl From<tiny_artnet::PortAddress> for Address {
+    fn from(value: tiny_artnet::PortAddress) -> Self {
+        let net = NetAddress::new(value.net, value.sub_net);
+        let universe = Universe(value.universe);
+        Address { net, universe }
     }
 }
 
-impl From<[u8; 2]> for Address {
-    fn from(value: [u8; 2]) -> Self {
-        Address(u16::from_le_bytes(value))
-    }
-}
-
-impl From<Address> for [u8; 2] {
+impl From<Address> for tiny_artnet::PortAddress {
     fn from(value: Address) -> Self {
-        value.to_le_bytes()
+        PortAddress {
+            sub_net: value.net.sub_net,
+            net: value.net.net,
+            universe: value.universe.0,
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Address;
-
-    #[test]
-    fn address_conversion() {
-        let addr = Address(1024);
-        let bytes: [u8; 2] = addr.into();
-
-        let addr2: Address = bytes.into();
-        assert_eq!(addr, addr2);
-    }
-
-    #[test]
-    fn address_range() {
-        let addresses = Address::from(0x0001).as_range(3);
-        let mut iter = addresses.into_iter();
-        assert_eq!(iter.next(), Some(Address::from(0x0001)));
-        assert_eq!(iter.next(), Some(Address::from(0x0002)));
-        assert_eq!(iter.next(), Some(Address::from(0x0003)));
-        assert_eq!(iter.next(), None);
-    }
 }
