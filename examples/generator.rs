@@ -11,7 +11,7 @@ use artnet_client::*;
 use async_channel::{Receiver, Sender};
 use bevy_color::{Color, Hue, Srgba};
 use bytes::Bytes;
-use edge_net::nal::UdpConnect;
+use edge_net::nal::UdpBind;
 use embassy_futures::select::select3;
 use iocraft::prelude::*;
 use rand::RngExt;
@@ -31,9 +31,8 @@ async fn app() -> anyhow::Result<()> {
     let (tx, rx) = ArtnetEvent::channel();
     let (tui_tx, tui_rx) = TuiEvent::channel();
 
-    let remote = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), ARTNET_PORT);
-    let local = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), ARTNET_PORT + 1);
-    let socket = stack.connect(local, remote).await?;
+    let local = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0);
+    let socket = stack.bind(local).await?;
 
     let receiver = ArtnetProducer::new(socket, rx);
 
@@ -52,10 +51,10 @@ async fn app() -> anyhow::Result<()> {
 }
 
 async fn generate(tx: Sender<ArtnetEvent>, tui_tx: Sender<TuiEvent>) -> anyhow::Result<()> {
-    const FPS: u64 = 20;
+    const FPS: u64 = 4;
     const FPS_DELAY: Duration = Duration::from_millis(1000 / FPS);
 
-    let mut image: [Color; 32] = [Color::hsv(0.0, 0.6, 0.8); 32];
+    let mut image: [Color; 16] = [Color::hsv(0.0, 0.9, 0.5); 16];
     let mut rng = rand::rng();
     loop {
         let now = Instant::now();

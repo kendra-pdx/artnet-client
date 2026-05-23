@@ -1,7 +1,9 @@
-#![no_std]
+// #![no_std]
+#![cfg_attr(not(test), no_std)]
 
 extern crate alloc;
 
+use core::fmt::Debug;
 use core::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 use async_channel::{Receiver, Sender};
@@ -44,5 +46,17 @@ pub const ARTNET_BROADCAST: SocketAddr =
 impl ArtnetEvent {
     pub fn channel() -> (Sender<ArtnetEvent>, Receiver<ArtnetEvent>) {
         async_channel::bounded(EVENT_BUFFER)
+    }
+}
+
+impl Debug for ArtnetEvent {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::Data { address, data } => f
+                .debug_struct("Data")
+                .field("address", address)
+                .field("data.len", &data.len())
+                .finish(),
+        }
     }
 }

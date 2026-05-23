@@ -10,7 +10,7 @@ use embassy_futures::select::{
     select,
 };
 use tiny_artnet::{Art, Dmx, Poll};
-use tracing::warn;
+use tracing::{info, instrument, warn};
 
 use crate::*;
 
@@ -19,7 +19,7 @@ pub struct ProducerError {
     message: String,
 }
 
-#[derive(new)]
+#[derive(new, Debug)]
 struct AddressInfo {
     #[new(value = "1")]
     seq: u8,
@@ -46,6 +46,7 @@ impl<UDP: UdpReceive + UdpSend> ArtnetProducer<UDP>
 where
     UDP::Error: 'static,
 {
+    #[instrument(skip_all, err)]
     pub async fn run(mut self) -> DynResult {
         loop {
             let mut socket_buffer = BytesMut::new();
@@ -63,6 +64,7 @@ where
         }
     }
 
+    #[instrument(skip_all, err)]
     async fn handle_socket_recv(&mut self, n: usize, buffer: &[u8], from: SocketAddr) -> DynResult {
         let command = tiny_artnet::from_slice(&buffer[0..n]).map_err(ProducerError::from)?;
 
@@ -82,6 +84,7 @@ where
         OK
     }
 
+    #[instrument(skip_all, err)]
     async fn handle_send_data(&mut self, address: Address, data: Bytes) -> DynResult {
         if let Some(address_info) = self.addresses.get_mut(&address.net) {
             // increment the sequence
@@ -98,6 +101,7 @@ where
             let len = art.serialize(buffer.deref_mut());
             self.socket.send(address_info.addr, &buffer[0..len]).await?;
         } else {
+            info!("polling for address");
             // we don't know where this universe is, so
             // broadcast a poll request
             let art = Art::Poll(Poll {

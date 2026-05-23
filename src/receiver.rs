@@ -35,7 +35,7 @@ impl<UDP: UdpSend + UdpReceive> ArtnetReceiver<UDP>
 where
     UDP::Error: 'static,
 {
-    #[instrument(skip(self))]
+    #[instrument(skip(self), err)]
     pub async fn run(mut self) -> DynResult {
         const BUFFER_SIZE: usize = 1024;
         let mut buffer = Box::new([0_u8; BUFFER_SIZE]);
@@ -54,7 +54,7 @@ where
         }
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, err)]
     async fn handle_poll(&mut self, reply_to: SocketAddr, _poll: Poll) -> DynResult {
         debug!("handling poll command");
 
@@ -70,7 +70,7 @@ where
         OK
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, err)]
     async fn handle_dmx(&mut self, dmx: Dmx<'_>) -> DynResult {
         debug!("handling dmx");
 

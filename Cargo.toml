@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-async-channel = { version = "2.5.0", default-features = false }
+async-channel = { version = "2.5", default-features = false }
 bytes = { version = "1.11", default-features = false }
 cfg-if = "1.0"
-derive_more = { version = "2.1", features = ["full"], default-features = false }
+derive_more = { version = "2.1", default-features = false, features = ["full"] }
 derive-new = { version = "0.7", default-features = false }
 thiserror = { version = "2.0", default-features = false }
 tiny-artnet = { path = "../tiny-artnet/", version = "0.1" }

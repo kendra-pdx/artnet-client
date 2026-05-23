@@ -68,4 +68,10 @@ impl From<Address> for tiny_artnet::PortAddress {
 #[cfg(test)]
 mod tests {
     use super::Address;
+
+    #[test]
+    fn address_u16() {
+        let address = Address::from(0x0002);
+        println!("{address:?}");
+    }
 }
