@@ -1,0 +1,12 @@
+{
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "cargo": {
+          "features": ["esp32c5"],
+          "target": "riscv32imac-unknown-none-elf",
+        },
+      },
+    },
+  },
+}

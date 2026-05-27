@@ -10,6 +10,7 @@ use async_channel::{Receiver, Sender};
 use cfg_if::cfg_if;
 
 mod address;
+pub mod io;
 
 pub use address::*;
 
