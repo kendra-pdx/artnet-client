@@ -1,4 +1,4 @@
-use core::{net::SocketAddr, ops::DerefMut};
+use core::ops::DerefMut;
 
 use alloc::{
     boxed::Box,
@@ -8,12 +8,11 @@ use alloc::{
 };
 use derive_more::From;
 use derive_new::new;
-use edge_net::nal::{UdpReceive, UdpSend};
 use thiserror::Error;
 use tiny_artnet::{Art, Dmx, Poll, PollReply};
 use tracing::{debug, instrument, warn};
 
-use crate::*;
+use crate::{io::AsyncIo, *};
 
 #[derive(Debug, Error, From)]
 #[error("{self:?}")]
@@ -23,26 +22,23 @@ pub struct ArtnetReceiverError {
 }
 
 #[derive(new)]
-pub struct ArtnetReceiver<UDP> {
-    socket: UDP,
+pub struct ArtnetReceiver<IO> {
+    io: IO,
     tx: Sender<ArtnetEvent>,
     address: NetAddress,
     #[new(default)]
     seq: BTreeMap<Address, u8>,
 }
 
-impl<UDP: UdpSend + UdpReceive> ArtnetReceiver<UDP>
+impl<IO: AsyncIo> ArtnetReceiver<IO>
 where
-    UDP::Error: 'static,
+    IO::Error: core::error::Error + 'static,
 {
     #[instrument(skip(self), err)]
     pub async fn run(mut self) -> DynResult {
-        const BUFFER_SIZE: usize = 1024;
-        let mut buffer = Box::new([0_u8; BUFFER_SIZE]);
         loop {
-            let (n, reply_to) = self.socket.receive(buffer.deref_mut()).await?;
-            assert!(n < BUFFER_SIZE, "artnet command exceeded buffer size");
-            let command = tiny_artnet::from_slice(&buffer[..n])
+            let (data, reply_to) = self.io.recv().await?;
+            let command = tiny_artnet::from_slice(&data)
                 .map_err(|e| ArtnetReceiverError::from(format!("{e:?}")))?;
             match command {
                 Art::Dmx(dmx) => self.handle_dmx(dmx).await?,
@@ -55,7 +51,7 @@ where
     }
 
     #[instrument(skip_all, err)]
-    async fn handle_poll(&mut self, reply_to: SocketAddr, _poll: Poll) -> DynResult {
+    async fn handle_poll(&mut self, reply_to: IO::Addr, _poll: Poll) -> DynResult {
         debug!("handling poll command");
 
         let poll_reply = PollReply {
@@ -66,7 +62,7 @@ where
         let art = Art::PollReply(poll_reply);
         let mut buffer = Box::new([0_u8; 1024]);
         let len = art.serialize(buffer.deref_mut());
-        self.socket.send(reply_to, &buffer[0..len]).await?;
+        self.io.send(reply_to, &buffer[0..len]).await?;
         OK
     }
 

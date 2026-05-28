@@ -3,6 +3,24 @@ name = "artnet-client"
 version = "0.1.0"
 edition = "2024"
 
+[package.metadata.cargo-matrix]
+[[package.metadata.cargo-matrix.channel]]
+name = "esp32c5"
+always_include = ["producer", "receiver", "esp32c5"]
+always_deny = ["esp32c6"]
+mutually_exclusive = [["io-udp", "io-wpan"], ["esp32c5", "esp32c6"]]
+
+[[package.metadata.cargo-matrix.channel]]
+name = "esp32c6"
+always_include = ["producer", "receiver", "esp32c6"]
+always_deny = ["esp32c5"]
+mutually_exclusive = [["io-udp", "io-wpan"], ["esp32c5", "esp32c6"]]
+
+[[package.metadata.cargo-matrix.channel]]
+name = "default"
+always_include = ["producer", "receiver"]
+always_deny = ["io-wpan", "esp32c5", "esp32c6"]
+
 [dependencies]
 async-channel = { version = "2.5", default-features = false }
 async-trait = "0.1"
@@ -13,15 +31,35 @@ derive-new = { version = "0.7", default-features = false }
 thiserror = { version = "2.0", default-features = false }
 tiny-artnet = { path = "../tiny-artnet/", version = "0.1" }
 
-edge-nal-embassy = { version = "0.8", features = ["proto-ipv4", "udp"] }
+# embassy-executor = { version = "0.10", features = ["defmt"] }
+embassy-futures = { version = "0.1", features = ["defmt"] }
+
+tracing = {
+  version = "0.1.44",
+  default-features = false,
+  features = ["attributes"]
+}
+# tracing-defmt = { path = "../tracing-defmt/", version = "*" }
+
+# --- UDP ---
+
+edge-nal-embassy = {
+  version = "0.8",
+  features = ["proto-ipv4", "udp"],
+  optional = true
+}
 edge-net = {
   version = "0.13",
-  features = ["defmt", "edge-nal-embassy", "embassy"]
+  features = ["defmt", "edge-nal-embassy", "embassy"],
+  optional = true
+}
+embassy-net = {
+  version = "0.8",
+  features = ["alloc", "defmt", "tcp", "udp"],
+  optional = true
 }
 
-embassy-executor = { version = "0.10", features = ["defmt"] }
-embassy-futures = { version = "0.1", features = ["defmt"] }
-embassy-net = { version = "0.8", features = ["alloc", "defmt", "tcp", "udp"] }
+# --- WPAN ---
 
 esp-hal = { version = "1.1", features = ["unstable"], optional = true }
 esp-radio = {
@@ -30,13 +68,6 @@ esp-radio = {
   optional = true
 }
 ieee802154 = { version = "0.6", optional = true }
-
-tracing = {
-  version = "0.1.44",
-  default-features = false,
-  features = ["attributes"]
-}
-# tracing-defmt = { path = "../tracing-defmt/", version = "*" }
 
 [dev-dependencies]
 anyhow = "1.0"
@@ -51,9 +82,10 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
 
 [features]
 default = ["producer", "receiver"]
-esp32c5 = ["esp-hal/esp32c5", "esp-radio/esp32c5", "ieee802154"]
-esp32c6 = ["esp-hal/esp32c6", "esp-radio/esp32c6", "ieee802154"]
-ieee802154 = [
+esp32c5 = ["esp-hal/esp32c5", "esp-radio/esp32c5"]
+esp32c6 = ["esp-hal/esp32c6", "esp-radio/esp32c6"]
+io-udp = ["dep:edge-nal-embassy", "dep:edge-net", "dep:embassy-net"]
+io-wpan = [
   "dep:esp-hal",
   "dep:esp-radio",
   "dep:ieee802154",

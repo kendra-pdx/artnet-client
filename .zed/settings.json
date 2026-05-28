@@ -3,7 +3,7 @@
     "rust-analyzer": {
       "initialization_options": {
         "cargo": {
-          "features": ["esp32c5"],
+          "features": ["io-wpan"],
           "target": "riscv32imac-unknown-none-elf",
         },
       },
