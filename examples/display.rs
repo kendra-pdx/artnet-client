@@ -3,7 +3,7 @@ mod shared;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use anyhow::anyhow;
-use artnet_client::{ARTNET_PORT, ArtnetEvent, ArtnetReceiver, NetAddress, Universe};
+use artnet_client::{ArtnetEvent, ArtnetReceiver, NetAddress, Universe, io::edge_udp::ARTNET_PORT};
 use async_channel::Receiver;
 use edge_net::nal::UdpBind;
 use embassy_futures::select::select;

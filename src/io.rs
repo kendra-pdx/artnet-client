@@ -1,10 +1,10 @@
 use bytes::Bytes;
 
 #[cfg(feature = "io-udp")]
-mod edge_udp;
+pub mod edge_udp;
 
 #[cfg(feature = "io-wpan")]
-mod esp_ieee802154;
+pub mod esp_ieee802154;
 
 pub(crate) mod sealed {
     pub trait Sealed {}

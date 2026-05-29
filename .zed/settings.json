@@ -3,8 +3,8 @@
     "rust-analyzer": {
       "initialization_options": {
         "cargo": {
-          "features": ["io-wpan"],
-          "target": "riscv32imac-unknown-none-elf",
+          "features": ["io-udp"],
+          // "target": "riscv32imac-unknown-none-elf",
         },
       },
     },

@@ -18,7 +18,6 @@ mutually_exclusive = [["io-udp", "io-wpan"], ["esp32c5", "esp32c6"]]
 
 [[package.metadata.cargo-matrix.channel]]
 name = "default"
-always_include = ["producer", "receiver"]
 always_deny = ["io-wpan", "esp32c5", "esp32c6"]
 
 [dependencies]
