@@ -37,6 +37,10 @@ pub(crate) type DynResult<T = ()> = Result<T, DynError>;
 pub(crate) const OK: DynResult = Ok(());
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Archive, rkyv::Deserialize, rkyv::Serialize)
+)]
 pub enum ArtnetEvent {
     Data { address: Address, data: Bytes },
 }

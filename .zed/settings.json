@@ -3,7 +3,7 @@
     "rust-analyzer": {
       "initialization_options": {
         "cargo": {
-          "features": ["io-udp", "serde"],
+          "features": ["io-udp", "serde", "rkyv"],
           // "target": "riscv32imac-unknown-none-elf",
         },
       },
