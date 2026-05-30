@@ -27,13 +27,16 @@ cfg_if! {
     }
 }
 
-use alloc::boxed::Box;
 use bytes::Bytes;
 
-pub(crate) type DynError = Box<dyn core::error::Error>;
+#[cfg(any(feature = "producer", feature = "receiver"))]
+pub(crate) type DynError = alloc::boxed::Box<dyn core::error::Error>;
+#[cfg(any(feature = "producer", feature = "receiver"))]
 pub(crate) type DynResult<T = ()> = Result<T, DynError>;
+#[cfg(any(feature = "producer", feature = "receiver"))]
 pub(crate) const OK: DynResult = Ok(());
 
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ArtnetEvent {
     Data { address: Address, data: Bytes },
 }

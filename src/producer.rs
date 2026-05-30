@@ -1,5 +1,7 @@
 use core::ops::DerefMut;
 
+use alloc::boxed::Box;
+
 use alloc::{collections::btree_map::BTreeMap, format, string::String};
 use derive_more::{Display, Error};
 use derive_new::new;

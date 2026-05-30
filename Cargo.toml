@@ -68,6 +68,10 @@ esp-radio = {
 }
 ieee802154 = { version = "0.6", optional = true }
 
+# --- SERDE ---
+
+serde = { version = "1.0", features = ["alloc", "derive"], optional = true , default-features = false }
+
 [dev-dependencies]
 anyhow = "1.0"
 bevy_color = "0.18"
@@ -91,6 +95,7 @@ io-wpan = [
 ]
 producer = []
 receiver = []
+serde = ["bytes/serde", "dep:serde"]
 
 [profile.release]
 opt-level = 3

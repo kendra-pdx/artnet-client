@@ -3,15 +3,18 @@ use derive_new::new;
 use tiny_artnet::PortAddress;
 
 #[derive(new, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct NetAddress {
     pub net: u8,
     pub sub_net: u8,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Deref, From, Into)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Universe(u8);
 
 #[derive(new, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From, Into)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Address {
     pub net: NetAddress,
     pub universe: Universe,
