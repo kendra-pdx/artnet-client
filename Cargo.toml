@@ -1,7 +1,8 @@
 [package]
 name = "artnet-client"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
+publish = ["kellnr"]
 
 [package.metadata.cargo-matrix]
 [[package.metadata.cargo-matrix.channel]]

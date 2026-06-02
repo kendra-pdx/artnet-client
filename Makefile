@@ -13,3 +13,7 @@ build-examples:
 .PHONY: test
 test:
 	cargo test -F rkyv -F io-udp -- --no-capture
+
+.PHONY: publish
+publish:
+	cargo ws publish --no-verify --allow-dirty --no-git-push
