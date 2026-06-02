@@ -89,6 +89,7 @@ bevy_color = "0.18"
 derive_more = { version = "2.1", features = ["deref", "deref_mut", "from"] }
 edge-nal-std = "0.6"
 iocraft = "0.8"
+rancor = "0.1"
 rand = "0.10"
 smol = "2.0"
 smol-macros = "0.1"

@@ -68,6 +68,7 @@ dependencies = [
  "esp-radio",
  "ieee802154",
  "iocraft",
+ "rancor",
  "rand 0.10.1",
  "rkyv",
  "serde",

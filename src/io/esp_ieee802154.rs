@@ -5,9 +5,7 @@ use embassy_futures::yield_now;
 use esp_radio::ieee802154::{Frame, Ieee802154};
 use ieee802154::mac::{Address, FrameContent, FrameType, FrameVersion, Header};
 
-use crate::io::{AsyncIo, sealed::Sealed};
-
-impl Sealed for Ieee802154<'_> {}
+use crate::io::AsyncIo;
 
 impl AsyncIo for Ieee802154<'_> {
     type Addr = Option<Address>;

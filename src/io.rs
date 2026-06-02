@@ -6,12 +6,8 @@ pub mod edge_udp;
 #[cfg(feature = "io-wpan")]
 pub mod esp_ieee802154;
 
-pub(crate) mod sealed {
-    pub trait Sealed {}
-}
-
 #[allow(async_fn_in_trait)]
-pub trait AsyncIo: sealed::Sealed {
+pub trait AsyncIo {
     type Addr: Copy;
     type Error;
     fn broadcast_addr() -> Self::Addr;

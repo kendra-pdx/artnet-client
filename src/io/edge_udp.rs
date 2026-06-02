@@ -3,13 +3,11 @@ use core::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 use bytes::Bytes;
 use edge_net::nal::{UdpReceive, UdpSend};
 
-use crate::io::{AsyncIo, sealed::Sealed};
+use crate::io::AsyncIo;
 
 pub const ARTNET_PORT: u16 = 6454;
 pub const ARTNET_BROADCAST: SocketAddr =
     SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::BROADCAST, ARTNET_PORT));
-
-impl<UDP: UdpSend + UdpReceive> Sealed for UDP {}
 
 impl<UDP: UdpSend + UdpReceive> AsyncIo for UDP {
     type Addr = core::net::SocketAddr;

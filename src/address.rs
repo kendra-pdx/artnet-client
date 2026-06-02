@@ -8,6 +8,7 @@ use tiny_artnet::PortAddress;
     feature = "rkyv",
     derive(rkyv::Archive, rkyv::Deserialize, rkyv::Serialize)
 )]
+#[cfg_attr(feature="rkyv", rkyv[compare(PartialEq), derive(Debug)])]
 pub struct NetAddress {
     pub net: u8,
     pub sub_net: u8,
@@ -19,6 +20,7 @@ pub struct NetAddress {
     feature = "rkyv",
     derive(rkyv::Archive, rkyv::Deserialize, rkyv::Serialize)
 )]
+#[cfg_attr(feature="rkyv", rkyv[compare(PartialEq), derive(Debug)])]
 pub struct Universe(u8);
 
 #[derive(new, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, From, Into)]
@@ -27,6 +29,7 @@ pub struct Universe(u8);
     feature = "rkyv",
     derive(rkyv::Archive, rkyv::Deserialize, rkyv::Serialize)
 )]
+#[cfg_attr(feature="rkyv", rkyv[compare(PartialEq), derive(Debug)])]
 pub struct Address {
     pub net: NetAddress,
     pub universe: Universe,
@@ -88,5 +91,24 @@ mod tests {
     fn address_u16() {
         let address = Address::from(0x0002);
         println!("{address:?}");
+    }
+
+    #[test]
+    #[cfg(feature = "rkyv")]
+    fn rkyv() {
+        use crate::ArchivedAddress;
+
+        let address = Address::from(0x0691);
+        let bytes = rkyv::to_bytes::<rancor::Error>(&address).unwrap();
+        println!("bytes len: {}", bytes.len());
+
+        let address2: Address = rkyv::from_bytes::<_, rancor::Error>(&bytes).unwrap();
+        assert_eq!(address, address2);
+
+        let address2 = rkyv::access::<ArchivedAddress, rancor::Error>(&bytes[..]).unwrap();
+        assert_eq!(address, *address2);
+
+        let address2 = rkyv::deserialize::<Address, rancor::Error>(address2).unwrap();
+        assert_eq!(address, address2);
     }
 }
