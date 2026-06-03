@@ -56,28 +56,30 @@ where
                 Second(Ok(ArtnetEvent::Data { address, data })) => {
                     self.handle_send_data(address, data).await?
                 }
-                First(Err(e)) => warn!(?e, "udp error"),
-                Second(Err(e)) => warn!(?e, "recv error"),
+                First(Err(e)) => warn!(?e, "io recv error"),
+                Second(Err(e)) => warn!(?e, "artnet event recv error"),
             }
         }
     }
 
     #[instrument(skip_all, err)]
     async fn handle_socket_recv(&mut self, buffer: &[u8], from: IO::Addr) -> DynResult {
-        let command = tiny_artnet::from_slice(&buffer).map_err(ProducerError::from)?;
-
-        match command {
-            Art::PollReply(poll_reply) => {
-                let address = NetAddress::from(poll_reply);
-                if let Some(info) = self.addresses.get_mut(&address) {
-                    info.addr = from;
-                } else {
-                    self.addresses.insert(address, AddressInfo::new(from));
+        if let Ok(command) = tiny_artnet::from_slice(&buffer) {
+            match command {
+                Art::PollReply(poll_reply) => {
+                    let address = NetAddress::from(poll_reply);
+                    if let Some(info) = self.addresses.get_mut(&address) {
+                        info.addr = from;
+                    } else {
+                        self.addresses.insert(address, AddressInfo::new(from));
+                    }
+                }
+                command => {
+                    warn!("unhandled art command: {command:?}");
                 }
             }
-            command => {
-                warn!("unhandled art command: {command:?}");
-            }
+        } else {
+            warn!("buffer did not contain artnet protocol")
         }
         OK
     }

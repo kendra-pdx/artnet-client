@@ -3,7 +3,6 @@ use core::ops::DerefMut;
 use alloc::{
     boxed::Box,
     collections::btree_map::BTreeMap,
-    format,
     string::{String, ToString},
 };
 use derive_more::From;
@@ -38,14 +37,16 @@ where
     pub async fn run(mut self) -> DynResult {
         loop {
             let (data, reply_to) = self.io.recv().await?;
-            let command = tiny_artnet::from_slice(&data)
-                .map_err(|e| ArtnetReceiverError::from(format!("{e:?}")))?;
-            match command {
-                Art::Dmx(dmx) => self.handle_dmx(dmx).await?,
-                Art::Poll(poll) => self.handle_poll(reply_to, poll).await?,
-                command => {
-                    warn!(?command, "unimplemented command");
+            if let Ok(command) = tiny_artnet::from_slice(&data) {
+                match command {
+                    Art::Dmx(dmx) => self.handle_dmx(dmx).await?,
+                    Art::Poll(poll) => self.handle_poll(reply_to, poll).await?,
+                    command => {
+                        warn!(?command, "unimplemented command");
+                    }
                 }
+            } else {
+                warn!("buffer did not contain artnet data");
             }
         }
     }
