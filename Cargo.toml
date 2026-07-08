@@ -44,17 +44,17 @@ tracing = {
 # --- UDP ---
 
 edge-nal-embassy = {
-  version = "0.8",
+  version = "0.9",
   features = ["proto-ipv4", "udp"],
   optional = true
 }
 edge-net = {
-  version = "0.13",
+  version = "0.14",
   features = ["defmt", "edge-nal-embassy", "embassy"],
   optional = true
 }
 embassy-net = {
-  version = "0.8",
+  version = "0.9",
   features = ["alloc", "defmt", "tcp", "udp"],
   optional = true
 }
@@ -88,7 +88,7 @@ serde = {
 anyhow = "1.0"
 bevy_color = "0.18"
 derive_more = { version = "2.1", features = ["deref", "deref_mut", "from"] }
-edge-nal-std = "0.6"
+edge-nal-std = "0.7"
 iocraft = "0.8"
 rancor = "0.1"
 rand = "0.10"
